@@ -4,13 +4,13 @@ Active Time Battle is a type of turn-based combat system in which each character
 ![atb_system](https://github.com/user-attachments/assets/dd45f40c-6826-458c-b025-c6fe10f13a89)
 
 # Introduction
-The system was created while participating in a game jam. The team and I were creating a classic 2D RPG with turn-based combat. The game was created using Unreal Engine 5 and C++. My task was to create the combat system and implement the designers' ideas, as well as integrate the system with the game's UI. The system consists of 6 types of activities: attack, defense, crystal skills, weapon skills, items, escape. Each of them uses actions which are templates for skills which can be easily created in 9 different prepared types. The video below demonstrates a sample gameplay showing most of the elements of the system. 
+The system was created while participating in a game jam. The team and I were developing a classic 2D RPG with turn-based combat. The game was made using Unreal Engine 5 and C++. My task was to create the combat system and implement the designers' ideas, as well as integrate the system with the game's UI. The system consists of 6 types of activities: attack, defense, crystal skills, weapon skills, items, escape. Each of them uses actions which are templates for skills which can be easily created in 9 different prepared types. The video demonstrates a sample gameplay showing most of the elements of the system: (https://www.youtube.com/watch?v=getVlf-3iAM or click the image below)
 
 [![GAMEPLAY](https://img.youtube.com/vi/getVlf-3iAM/0.jpg)](https://www.youtube.com/watch?v=getVlf-3iAM)
 
 # Playable demo
 Together with the team, we have created a playable demo where you can test the system in action. The demo can be downloaded on the itchi.io platform:
-[https://blaneczek.itch.io/pocman](https://blaneczek.itch.io/blade-of-legend)
+[https://blaneczek.itch.io/blade-of-legend](https://blaneczek.itch.io/blade-of-legend)
 
 # Key elements
 
