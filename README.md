@@ -18,7 +18,6 @@ Together with the team, we have created a playable demo where you can test the s
 |-------------------------------------------------------------------------------|-----------------------------------------------------------------|
 | [Actions](#actions-code)                                                      | Templates for abilities.                                        |
 | [Combat character](#combat-character-code)                                    | Heroes and enemies overview.                                    |
-| [Combat components](#combat-components-code)                                  | Specified functionalities.                                      |
 | [Core](#core-code)                                                            | System managers.                                                |
 | [UI](#ui-code)                                                                | Integrated widgets with the system.                             |
 
@@ -30,12 +29,6 @@ Together with the team, we have created a playable demo where you can test the s
 </details>
 
 # Combat character ([code](Source/BladeOfLegend/DAWID/Characters)) 
-<details>
-<summary>More</summary>
-
-</details>
-
-# Combat components ([code](Source/BladeOfLegend/DAWID/CombatComponents)) 
 <details>
 <summary>More</summary>
 
