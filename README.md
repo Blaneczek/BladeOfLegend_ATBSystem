@@ -17,7 +17,7 @@ Together with the team, we have created a playable demo where you can test the s
 |                                                                               | Description                                                     |
 |-------------------------------------------------------------------------------|-----------------------------------------------------------------|
 | [Actions](#actions-code)                                                      | Templates for abilities.                                        |
-| [Combat character](#combat-character-code)                                    | Heroes and enemies overview.                                    |
+| [Combat characters](#combat-characters-code)                                  | Heroes and enemies overview.                                    |
 | [Core](#core-code)                                                            | System managers.                                                |
 | [UI](#ui-code)                                                                | Integrated widgets with the system.                             |
 
@@ -25,10 +25,27 @@ Together with the team, we have created a playable demo where you can test the s
 # Actions ([code](Source/BladeOfLegend/DAWID/Actions))  
 <details>
 <summary>More</summary>
+Actions are used for all activities that characters perform during combat from using abbilities to using items. Each action is a UObject that is created while perform any activity. There are 9 types of action telling how activity will be performed: </br>
+  
+![image](https://github.com/user-attachments/assets/b5b246d9-91e8-4e83-b154-97bad793ce8a)
 
+Default: its an action that is used on Character that performs it, e.g. using items or Defend ability.
+</br>Default Melee/Range: its an action used on the other character, e.g. using default Attack ability.
+</br>Multiple Default Melee/Range: its an action used on many characters.
+</br>Bounce Range: special action that sends one projectile that bounce beetween multiple characters.
+</br>Column Melee: special action where one column of slots are chose and character perform ability on each character from that column
+</br>Multiple In Place: special action where ability is used on many characters without projectiles or needing to come to them.
+</br>Summon: special action that allows summoning new characters to slots.
+
+
+</br>Let's dive in how this works. For example Player choses Attack, marks enemy character and then proper UObject is created. For that, action of type DefaultMelee is used. Default attack of the Hero is created in Blueprint that inherits from DefaultMeleeAction class. That way designers can easly create abilities in blueprints, set up all neccesery data and calculations od damage or other effects. 
+  
+![image](https://github.com/user-attachments/assets/5f530f65-0e81-433f-a5ac-ebcfae6f0f37)
+
+<br>
 </details>
 
-# Combat character ([code](Source/BladeOfLegend/DAWID/Characters)) 
+# Combat characters ([code](Source/BladeOfLegend/DAWID/Characters)) 
 <details>
 <summary>More</summary>
 
