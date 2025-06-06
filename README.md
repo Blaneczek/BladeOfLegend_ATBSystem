@@ -29,19 +29,26 @@ Actions are used for all activities that characters perform during combat, from 
   
 ![image](https://github.com/user-attachments/assets/b5b246d9-91e8-4e83-b154-97bad793ce8a)
 
-Default: an action that is used on the character who performs it, such as using items or the Defense ability.
+**Default:** an action that is used on the character who performs it, such as using items or the Defense ability.
+</br>![default](https://github.com/user-attachments/assets/484e87a2-7d96-4baa-95b8-bdd5fe2d6283)
 
-</br>Default Melee/Range: an action that is used on another character, such as using the default attack ability. In Melee the character runs to the target, in Range the character sends a projectile to the target.
-</br>![defaultmelee (2)](https://github.com/user-attachments/assets/0d04fef0-a954-4523-b9d2-9200ec76cbcc) ![defaultmelee (2)](https://github.com/user-attachments/assets/0d04fef0-a954-4523-b9d2-9200ec76cbcc)
+</br>**Default Melee/Range:** an action that is used on another character, such as using the default attack ability. In Melee the character runs to the target, in Range the character sends a projectile to the target.
+</br>![defaultmelee (2)](https://github.com/user-attachments/assets/0d04fef0-a954-4523-b9d2-9200ec76cbcc) ![defaultrange](https://github.com/user-attachments/assets/164f3493-a458-4238-82b7-2ebbe9076a64)
 
+</br>**Multiple Default Melee/Range:** an action used on multiple characters.
+</br>![multiplemelee](https://github.com/user-attachments/assets/09b024bf-3aff-41e6-a9f8-e5e1918bba53) ![multiplerange](https://github.com/user-attachments/assets/c3113ccd-f273-4f6e-bf90-87cfaa36e45a)
 
+</br>**Bounce Range:** a special action that sends a single projectile that bounces between multiple characters.
+</br>![bounce](https://github.com/user-attachments/assets/12ae90be-cd0a-471c-9056-d5cf5d9f340e)
 
-</br>Multiple Default Melee/Range: an action used on multiple characters.
-</br>Bounce Range: a special action that sends a single projectile that bounces between multiple characters.
-</br>Column Melee: a special action in which one column of slots is selected and the character performs the ability on every character in that column
-</br>Multiple In Place: a special action in which the ability is used on multiple characters without projectiles or having to walk up to them..
-</br>Summon: a special action that allows you to summon new characters to slots.
+</br>**Column Melee:** a special action in which one column of slots is selected and the character performs the ability on every character in that column
+</br>![column](https://github.com/user-attachments/assets/c34676cb-2964-4aa4-8fed-5843c80b5c93)
 
+</br>**Whole Team In Place:** a special action in which the ability is used on all enemies without projectiles or having to walk up to them..
+</br>![wholeteam](https://github.com/user-attachments/assets/249a9654-e3ab-4c3c-ab6d-9b360492294f)
+
+</br>**Summon:** a special action that allows you to summon new characters to slots.
+</br>![summon](https://github.com/user-attachments/assets/096a0d5e-dcf4-4a06-b8e0-a25141f1518f)
 
 </br>Let's take a look at how this works. For example, the player selects Attack, selects the enemy character, and then the proper UObject is created. An action of type DefaultMelee is used for this purpose. The character's default attack is created in Blueprint, which inherits from the DefaultMeleeAction class. This way designers can easily create abilities in Blueprints, set all the necessary data and calculate damage or other effects. 
   
