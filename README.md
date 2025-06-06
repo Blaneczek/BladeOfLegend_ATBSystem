@@ -32,7 +32,8 @@ Actions are used for all activities that characters perform during combat, from 
 Default: an action that is used on the character who performs it, such as using items or the Defense ability.
 
 </br>Default Melee/Range: an action that is used on another character, such as using the default attack ability. In Melee the character runs to the target, in Range the character sends a projectile to the target.
-</br>![meleedefault-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/e1b230ab-d648-427a-884e-e21447facafa) ![meleedefault-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/e1b230ab-d648-427a-884e-e21447facafa) 
+</br>![defaultmelee (2)](https://github.com/user-attachments/assets/0d04fef0-a954-4523-b9d2-9200ec76cbcc) ![defaultmelee (2)](https://github.com/user-attachments/assets/0d04fef0-a954-4523-b9d2-9200ec76cbcc)
+
 
 
 </br>Multiple Default Melee/Range: an action used on multiple characters.
