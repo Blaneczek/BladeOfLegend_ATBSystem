@@ -30,7 +30,11 @@ Actions are used for all activities that characters perform during combat, from 
 ![image](https://github.com/user-attachments/assets/b5b246d9-91e8-4e83-b154-97bad793ce8a)
 
 Default: an action that is used on the character who performs it, such as using items or the Defense ability.
+
 </br>Default Melee/Range: an action that is used on another character, such as using the default attack ability. In Melee the character runs to the target, in Range the character sends a projectile to the target.
+</br>![meleedefault-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/e1b230ab-d648-427a-884e-e21447facafa) ![meleedefault-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/e1b230ab-d648-427a-884e-e21447facafa) 
+
+
 </br>Multiple Default Melee/Range: an action used on multiple characters.
 </br>Bounce Range: a special action that sends a single projectile that bounces between multiple characters.
 </br>Column Melee: a special action in which one column of slots is selected and the character performs the ability on every character in that column
