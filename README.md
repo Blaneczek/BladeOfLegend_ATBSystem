@@ -25,6 +25,7 @@ Together with the team, we have created a playable demo where you can test the s
 # Actions ([code](Source/BladeOfLegend/DAWID/Actions))  
 <details>
 <summary>More</summary>
+</br>	
 Actions are used for all activities that characters perform during combat, from using abilities to using items. Each action is a UObject that is created when any activity is performed. There are 9 types of actions that determine how an activity will be performed: </br>
   
 ![image](https://github.com/user-attachments/assets/b5b246d9-91e8-4e83-b154-97bad793ce8a)
@@ -219,13 +220,106 @@ void UBLDefaultMeleeAction::ExecuteAction(const TArray<ABLCombatSlot*>& Targets)
 # Combat characters ([code](Source/BladeOfLegend/DAWID/Characters)) 
 <details>
 <summary>More</summary>
+</br>Combat characters are heroes and enemies used during combat. They contain all the necessary data, such as character attributes and possessed actions, as well as functions responsible for calculating damage and other effects.
+
+```c++
+float ABLCombatCharacter::CalculateElementsMultipliers(ECombatElementType DamageElementType, ECombatElementType CharacterElementType, bool& OutIsHeal)
+{ 
+	OutIsHeal = false;
+
+	TArray<TArray<float>> ElementsTable = {
+	  // AttackType
+	  //   FIRE     WATER   EARTH   WIND    ICE    THUNDER  ACID    DARK    WHITE   NONE       TargetType
+		{1.0f,   2.0f,   1.0f,   1.0f,   1.5f,   1.0f,   1.0f,   1.5f,   1.0f,   1.0f},  // FIRE   
+		{2.0f,   1.0f,   1.0f,   1.0f,   1.5f,   4.0f,   0.75f,  1.0f,   1.5f,   1.0f},  // WATER
+		{1.0f,   1.0f,   1.0f,   2.0f,   1.0f,   0.0f,   4.0f,   1.5f,   1.0f,   1.0f},  // EARTH
+		{1.0f,   1.0f,   2.0f,   1.0f,   1.0f,   4.0f,   1.0f,   1.0f,   1.5f,   1.0f},  // WIND
+		{1.5f,   0.75f,  1.0f,   1.0f,   1.0f,   0.75f,  1.0f,   1.5f,   1.0f,   1.0f},  // ICE
+		{1.0f,   0.0f,   4.0f,   0.0f,   1.5f,   1.0f,   1.0f,   1.0f,   1.5f,   1.0f},  // THUNDER
+		{1.0f,   1.5f,   0.0f,   1.0f,   1.0f,   1.0f,   1.0f,   1.5f,   1.0f,   1.0f},  // ACID
+		{0.0f,   1.0f,   0.0f,   1.0f,   0.0f,   1.0f,   0.0f,   1.0f,   2.0f,   0.0f},  // DARK
+		{1.0f,   0.0f,   1.0f,   0.0f,   1.0f,   0.0f,   1.0f,   2.0f,   1.0f,   0.0f},  // WHITE
+		{1.0f,   1.0f,   1.0f,   1.0f,   1.0f,   1.0f,   1.0f,   1.0f,   1.0f,   1.0f}   // NONE
+	};
+
+	const int32 AttackElementIndex = static_cast<int32>(DamageElementType);
+	const int32 TargetElementIndex = static_cast<int32>(CharacterElementType);
+
+	const float Multiplier = ElementsTable[TargetElementIndex][AttackElementIndex];
+
+	// If Attack and Target Element is the same, damage will be converted to healing (except NONE NONE)
+	if (AttackElementIndex == TargetElementIndex && AttackElementIndex != ElementsTable.Num() - 1)
+	{
+		OutIsHeal = true;
+		return Multiplier;
+	}
+	else
+	{
+		return Multiplier;
+	}
+}
+```
+
+```c++
+void ABLCombatCharacter::HandleDamageHit(ABLCombatCharacter* Attacker, float Damage, float DMGMultiplier, ECombatElementType DamageElementType, bool bMagicalAction)
+{
+	// Only if action is physical
+	if (!bMagicalAction)
+	{
+		// If it draws DODGE, character will not take any damage or heal
+		const int32 DodgeChance = FMath::RandRange(1, 100);
+		if (DodgeChance <= CurrentDodge)
+		{
+			DisplayTextDMG(0, false, DamageElementType, true);
+			return;
+		}
+	}
+	
+	if (bMagicalAction && bMagicImmunity)
+	{
+		DisplayTextDMG(0, false, DamageElementType, false);
+		return;
+	}
+
+	// If it draws Pierce, Defense is reduced by half
+	const int32 PierceChance = FMath::RandRange(1, 100);
+	const float NewDefense = PierceChance <= BaseData.Pierce ? CurrentDefense / 2 : CurrentDefense;
+
+	// 10 def decreases dmg by 5%
+	float DMGValue = (Damage * DMGMultiplier) * (1.f - ((NewDefense / 1000) * 5));
+
+	// If attack is physical and Attacker has Poisoning status, dmg is decreased by 20%
+	if (!bMagicalAction && Attacker && Attacker->StatusesComponent->Statuses.Contains(ECombatStatusType::POISONING))
+	{
+		// Clamp because Defense can be higher than Damage, so that Damage is not negative
+		DMGValue = FMath::Clamp(FMath::RoundHalfFromZero(DMGValue * 0.8f), 0, FMath::RoundHalfFromZero(DMGValue));
+	}
+	else
+	{
+		DMGValue = FMath::Clamp(FMath::RoundHalfFromZero(DMGValue), 0, FMath::RoundHalfFromZero(DMGValue));
+	}
+
+	// Sets character HP between 0 and MaxHP
+	CurrentHP = FMath::Clamp((CurrentHP - DMGValue), 0, BaseData.MaxHP);
+
+	DisplayTextDMG(DMGValue, false, DamageElementType);
+	OnHealthUpdate.ExecuteIfBound();
+
+	if (BaseData.TakeDMGAnim && GetAnimInstance() && !bDefendIdle)
+	{
+		GetAnimationComponent()->GetAnimInstance()->PlayAnimationOverride(BaseData.TakeDMGAnim);
+	}
+}
+```
+
 
 </details>
 
 # Core ([code](Source/BladeOfLegend/DAWID/Core)) 
 <details>
 <summary>More</summary>
-
+</br>There are two key elements: CombatSlots and CombatManager. 
+	
 </details>
 
 # UI ([code](Source/BladeOfLegend/DAWID/UI))
