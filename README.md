@@ -54,6 +54,165 @@ Actions are used for all activities that characters perform during combat, from 
   
 ![image](https://github.com/user-attachments/assets/5f530f65-0e81-433f-a5ac-ebcfae6f0f37)
 
+</br>Actions are managed by BLActionComponent, which is added to Characters. In this component, the correct action type is first created in the CreateAction function based on ActionData.Type. Then the OnCreateAction function of the newly created UObject is called.
+
+```c++
+void UBLActionComponent::CreateAction(const FVector& OwnerSlotLocation, const TArray<ABLCombatSlot*>& Targets, const FCombatActionData& ActionData, AActor* CombatManagerActor)
+{
+	ABLCombatCharacter* OwnerChar = Cast<ABLCombatCharacter>(GetOwner());
+	if (!OwnerChar)
+	{
+		EndAction(true);
+		return;
+	}
+
+	SlotLocation = OwnerSlotLocation;
+	TargetSlots = Targets;
+
+	switch (ActionData.Type)
+	{
+		case ECombatActionType::ATTACK:
+		{
+			if (!AttackActions.IsValidIndex(ActionData.Index))
+			{
+				break;
+			}
+
+			CurrentAction = NewObject<UBLAction>(this, AttackActions[ActionData.Index].LoadSynchronous());
+			if (CurrentAction)
+			{
+				CurrentAction->OnCreateAction(this, OwnerChar, CombatManagerActor);
+			}
+			else
+			{
+				break;
+			}
+			return;
+		}
+  .
+  .
+  .
+```
+
+</br>The ActivateAction function is then called in the Action object. Each action type has its own implementation of this function. The action we chose earlier is of type DefaultMeleeAction. There we return to the ActionComponent and call the DefaultMeleeAction function. 
+
+```c++
+void UBLAction::OnCreateAction(UBLActionComponent* OwnerComponent, ABLCombatCharacter* Owner, AActor* InCombatManager)
+{
+	if (OwnerComponent && Owner)
+	{
+		CombatManager = InCombatManager;
+		OwnerChar = Owner;
+
+		ActivateAction(OwnerComponent);
+
+		if (TurnsCost > 0)
+		{
+			OwnerChar->StartActionTurnsCooldown(TurnsCost);
+		}
+	}
+}
+```
+
+```c++
+void UBLDefaultMeleeAction::ActivateAction(UBLActionComponent* OwnerComponent)
+{
+	if (OwnerComponent && IsValid(OwnerChar))
+	{
+		OwnerComponent->DefaultMeleeAction();
+
+		OwnerChar->SetCurrentME(FMath::Clamp((OwnerChar->GetCurrentME() - MECost), 0.f, OwnerChar->GetMaxME()));
+	}
+}
+```
+
+</br>ActionComponent manages all the action flows. In our example, the DefaultMeleeAction function is called, which calculates the location where our character needs to move and sends it there.
+
+```c++
+/** Action is executing in place, target is the owner. */
+	void DefaultAction();
+
+	/** Character runs up to the target and executes action. */
+	void DefaultMeleeAction();
+
+	/** Character creates a projectile that flies to the target and executes action. */
+	void DefaultRangeAction(const TSubclassOf<ABLRangeProjectile>& ProjectileClass, UPaperFlipbook* ProjectileSprite);
+
+	/** Character runs up to the targets one by one and executes action for every target .*/
+	void MultipleDefaultMeleeAction();
+
+	/** Character creates multiple projectiles that fly to the targets and execute action. */
+	void MultipleDefaultRangeAction(TSubclassOf<ABLRangeProjectile> ProjectileClass, UPaperFlipbook* ProjectileSprite);
+
+	/** Character runs up to the column and executes an action for every target in column. */
+	void ColumnMeleeAction();
+
+	/** Character creates a single projectile that travels through multiple targets. */
+	void BounceRangeAction(const TSubclassOf<ABLRangeProjectile>& ProjectileClass, UPaperFlipbook* ProjectileSprite);
+
+	/** Character in place executes an action for each target. */
+	void MultipleInPlaceAction(const TSubclassOf<APaperZDCharacter>& EffectClass);
+```
+
+```c++
+void UBLActionComponent::DefaultMeleeAction()
+{
+	if (!IsValid(AIC) || !TargetSlots.IsValidIndex(0) || !IsValid(TargetSlots[0]))
+	{
+		EndAction();
+		return;
+	}
+
+	AIC->GetPathFollowingComponent()->OnRequestFinished.AddUObject(this, &UBLActionComponent::ReachedActionDestination);
+	const FVector& Location = TargetSlots[0]->GetCharacter()->GetActorLocation() + (TargetSlots[0]->GetCharacter()->GetActorForwardVector() * 40);
+	AIC->MoveToLocation(Location, 5.f);
+}
+```
+
+</br>When a character reaches the target point, an action is executed (an animation is played, damage is dealt, etc.), and then the characters return to their location.
+
+```c++
+void UBLActionComponent::ReachedActionDestination(FAIRequestID RequestID, const FPathFollowingResult& Result)
+{
+	if (!IsValid(AIC) || !IsValid(CurrentAction))
+	{
+		AIC->MoveToLocation(SlotLocation, 5.f);
+		EndAction();
+		return;
+	}
+
+	AIC->GetPathFollowingComponent()->OnRequestFinished.RemoveAll(this);
+	AIC->GetPathFollowingComponent()->OnRequestFinished.AddUObject(this, &UBLActionComponent::ReachedSlotLocation);
+
+	CurrentAction->OnEndExecution.BindWeakLambda(this, [this]() { AIC->MoveToLocation(SlotLocation, 5.f); });
+	CurrentAction->ExecuteAction(TargetSlots);
+}
+```
+
+```c++
+void UBLDefaultMeleeAction::ExecuteAction(const TArray<ABLCombatSlot*>& Targets)
+{
+	if (!IsValid(OwnerChar) || !Targets.IsValidIndex(0) || !Targets[0])
+	{
+		OnEndExecution.ExecuteIfBound();
+		return;
+	}
+
+	if (IsValid(ActionAnim))
+	{
+		FZDOnAnimationOverrideEndSignature EndAnimDel;
+		EndAnimDel.BindWeakLambda(this, [this](bool bResult) { OnEndExecution.ExecuteIfBound(); });
+		OwnerChar->GetAnimationComponent()->GetAnimInstance()->PlayAnimationOverride(ActionAnim, "DefaultSlot", 1.f, 0.0f, EndAnimDel);
+		ActionCalculations(Targets[0], CombatManager);
+	}
+	else
+	{
+		ActionCalculations(Targets[0], CombatManager);
+		OnEndExecution.ExecuteIfBound();
+	}
+}
+```
+
 <br>
 </details>
 
