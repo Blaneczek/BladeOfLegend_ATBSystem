@@ -478,7 +478,7 @@ struct FPostCombatData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Experience;
 
-	/** Gold gained after winnging fight. */
+	/** Gold gained after winning fight. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Gold;
 
@@ -532,7 +532,7 @@ struct FCombatData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<USoundBase> CombatMusic;
 
-	/** Flag telling if Plyaer can use Run Away action (tries to escape combat). */
+	/** Flag telling if Player can use Run Away action (tries to escape combat). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bCanRunAway;
 
@@ -544,7 +544,7 @@ struct FCombatData
 	UPROPERTY()
 	bool bSneakAttack;
 
-	/** Tag used to set a alive/dead flag for the enemy in Overworld. */
+	/** Tag used to set an alive/dead flag for the enemy in Overworld. */
 	UPROPERTY()
 	FName EnemyTag;
 
@@ -605,10 +605,10 @@ struct FEnemyLevelData
 	{}
 
 	FEnemyLevelData(float InStrength, float InAgility, float InWisdom, float InEndurance, float InBaseHP, float InBaseME
-		, float InBaseAttackDMG, float InBaseDefens, float InCooldown, int32 InExp, int32 InMoney)
+		, float InBaseAttackDMG, float InBaseDefense, float InCooldown, int32 InExp, int32 InMoney)
 
 		: Strength(InStrength), Agility(InAgility), Wisdom(InWisdom), Endurance(InEndurance), BaseHP(InBaseHP)
-		, BaseME(InBaseME), BaseAttackDMG(InBaseAttackDMG), BaseDefense(InBaseDefens), Cooldown(InCooldown)
+		, BaseME(InBaseME), BaseAttackDMG(InBaseAttackDMG), BaseDefense(InBaseDefense), Cooldown(InCooldown)
 		, Exp(InExp), Money(InMoney)
 	{}
 };

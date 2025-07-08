@@ -39,7 +39,7 @@ void UBLActionComponent::CreateAction(const FVector& OwnerSlotLocation, const TA
 	ABLCombatCharacter* OwnerChar = Cast<ABLCombatCharacter>(GetOwner());
 	if (!OwnerChar)
 	{
-		EndAction(true);
+		EndAction();
 		return;
 	}
 
@@ -157,27 +157,24 @@ void UBLActionComponent::CreateAction(const FVector& OwnerSlotLocation, const TA
 			else
 			{
 				OnEscapeAction.ExecuteIfBound(false);
-				EndAction(true);
+				EndAction();
 			}
 			return;
 		}
-		default: break;
+		default: EndAction();
 	}
-
-	// if something went wrong, end Action
-	EndAction(true);
 }
 
 void UBLActionComponent::DefaultAction()
 {
 	if (IsValid(CurrentAction))
 	{
-		CurrentAction->OnEndExecution.BindWeakLambda(this, [this]() { EndAction(true); });
+		CurrentAction->OnEndExecution.BindWeakLambda(this, [this]() { EndAction(); });
 		CurrentAction->ExecuteAction(nullptr);
 	}
 	else
 	{
-		EndAction(true);
+		EndAction();
 	}
 }
 
@@ -185,7 +182,7 @@ void UBLActionComponent::DefaultMeleeAction()
 {
 	if (!IsValid(AIC) || !TargetSlots.IsValidIndex(0) || !IsValid(TargetSlots[0]))
 	{
-		EndAction(true);
+		EndAction();
 		return;
 	}
 
@@ -199,7 +196,7 @@ void UBLActionComponent::DefaultRangeAction(const TSubclassOf<ABLRangeProjectile
 	ProjectileTargetsNum = 0;
 	if (!ProjectileClass || !ProjectileSprite || !TargetSlots.IsValidIndex(0) || !IsValid(TargetSlots[0]))
 	{
-		EndAction(true);
+		EndAction();
 		return;
 	}
 	
@@ -217,7 +214,7 @@ void UBLActionComponent::DefaultRangeAction(const TSubclassOf<ABLRangeProjectile
 	}
 	else
 	{
-		EndAction(true);
+		EndAction();
 	}
 }
 
@@ -225,7 +222,7 @@ void UBLActionComponent::MultipleDefaultMeleeAction()
 {
 	if (!IsValid(AIC) || !TargetSlots.IsValidIndex(0) || !IsValid(TargetSlots[0]))
 	{
-		EndAction(true);
+		EndAction();
 		return;
 	}
 
@@ -247,7 +244,7 @@ void UBLActionComponent::MultipleDefaultRangeAction(TSubclassOf<ABLRangeProjecti
 	}
 	else
 	{
-		EndAction(true);
+		EndAction();
 	}
 }
 
@@ -255,7 +252,7 @@ void UBLActionComponent::ColumnMeleeAction()
 {
 	if (!IsValid(AIC) || !TargetSlots.IsValidIndex(0) || !IsValid(TargetSlots[0]))
 	{
-		EndAction(true);
+		EndAction();
 		return;
 	}
 
@@ -269,7 +266,7 @@ void UBLActionComponent::BounceRangeAction(const TSubclassOf<ABLRangeProjectile>
 	ProjectileTargetIndex = 1;
 	if (!ProjectileClass || !ProjectileSprite || !TargetSlots.IsValidIndex(0) || !IsValid(TargetSlots[0]))
 	{
-		EndAction(true);
+		EndAction();
 		return;
 	}
 	
@@ -281,7 +278,7 @@ void UBLActionComponent::BounceRangeAction(const TSubclassOf<ABLRangeProjectile>
 	ABLRangeProjectile* Projectile = GetWorld()->SpawnActor<ABLRangeProjectile>(ProjectileClass, Location, Rotation, SpawnInfo);
 	if (!Projectile)
 	{
-		EndAction(true);
+		EndAction();
 		return;
 	}
 	
@@ -305,7 +302,7 @@ void UBLActionComponent::MultipleInPlaceAction(const TSubclassOf<APaperZDCharact
 {
 	if (!IsValid(CurrentAction))
 	{
-		EndAction(true);
+		EndAction();
 		return;
 	}
 	
@@ -319,7 +316,7 @@ void UBLActionComponent::MultipleInPlaceAction(const TSubclassOf<APaperZDCharact
 		}
 	}
 
-	CurrentAction->OnEndExecution.BindWeakLambda(this, [this]() { EndAction(true); });
+	CurrentAction->OnEndExecution.BindWeakLambda(this, [this]() { EndAction(); });
 	CurrentAction->ExecuteAction(TargetSlots);
 }
 
@@ -329,7 +326,7 @@ void UBLActionComponent::ReachedActionDestination(FAIRequestID RequestID, const 
 	if (!IsValid(AIC) || !IsValid(CurrentAction))
 	{
 		AIC->MoveToLocation(SlotLocation, 5.f);
-		EndAction(true);
+		EndAction();
 		return;
 	}
 
@@ -346,7 +343,7 @@ void UBLActionComponent::ReachedActionDestination(FAIRequestID RequestID, const 
 	if (!IsValid(AIC) || !IsValid(CurrentAction))
 	{
 		AIC->MoveToLocation(SlotLocation, 5.f);
-		EndAction(true);
+		EndAction();
 		return;
 	}
 
@@ -369,16 +366,16 @@ void UBLActionComponent::ReachedActionDestination(FAIRequestID RequestID, const 
 	CurrentAction->ExecuteAction(TargetSlots[TargetIndex]);
 }
 
-// For DeafultRange action flow.
+// For DefaultRange action flow.
 void UBLActionComponent::ReachedActionDestination()
 {
 	if (!IsValid(CurrentAction) || !TargetSlots.IsValidIndex(0) || !IsValid(TargetSlots[0]))
 	{
-		EndAction(true);
+		EndAction();
 		return;
 	}
 
-	CurrentAction->OnEndExecution.BindWeakLambda(this, [this]() { EndAction(true); });
+	CurrentAction->OnEndExecution.BindWeakLambda(this, [this]() { EndAction(); });
 	CurrentAction->ExecuteAction(TargetSlots[0]);
 }
 
@@ -387,7 +384,7 @@ void UBLActionComponent::ReachedActionDestination(int32 Index, bool bLastProject
 {
 	if (!IsValid(CurrentAction) || !TargetSlots.IsValidIndex(Index) || !IsValid(TargetSlots[Index]))
 	{
-		EndAction(true);
+		EndAction();
 		return;
 	}
 
@@ -395,7 +392,7 @@ void UBLActionComponent::ReachedActionDestination(int32 Index, bool bLastProject
 	{
 		CurrentAction->OnEndExecution.BindWeakLambda(this, [this]()
 		{
-			EndAction(true);
+			EndAction();
 		});
 	}
 
@@ -407,7 +404,7 @@ void UBLActionComponent::ReachedActionDestination(ABLRangeProjectile* Projectile
 {
 	if (!IsValid(CurrentAction) || !TargetSlots.IsValidIndex(Index) || !TargetSlots[Index] || !IsValid(Projectile))
 	{
-		EndAction(true);
+		EndAction();
 		return;
 	}
 
@@ -427,7 +424,7 @@ void UBLActionComponent::ReachedActionDestination(ABLRangeProjectile* Projectile
 	else
 	{
 		Projectile->Destroy();
-		EndAction(true);
+		EndAction();
 	}
 }
 
@@ -437,7 +434,7 @@ void UBLActionComponent::ReachedSlotLocation(FAIRequestID RequestID, const FPath
 	{
 		AIC->GetPathFollowingComponent()->OnRequestFinished.RemoveAll(this);
 	}
-	EndAction(true);
+	EndAction();
 }
 
 void UBLActionComponent::SpawnProjectile(TSubclassOf<ABLRangeProjectile> ProjectileClass, UPaperFlipbook* ProjectileSprite)
@@ -448,7 +445,7 @@ void UBLActionComponent::SpawnProjectile(TSubclassOf<ABLRangeProjectile> Project
 		{
 			GetWorld()->GetTimerManager().ClearTimer(ProjectileSpawnTimer);
 		}
-		EndAction(true);
+		EndAction();
 		return;
 	}
 	
@@ -465,7 +462,7 @@ void UBLActionComponent::SpawnProjectile(TSubclassOf<ABLRangeProjectile> Project
 	ProjectileTargetIndex++;
 }
 
-void UBLActionComponent::EndAction(bool bResult)
+void UBLActionComponent::EndAction()
 {
 	TargetSlots.Empty();
 

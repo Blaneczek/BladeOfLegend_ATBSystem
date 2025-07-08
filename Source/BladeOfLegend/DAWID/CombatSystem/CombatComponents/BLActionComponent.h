@@ -101,7 +101,7 @@ private:
 	void SpawnProjectile(TSubclassOf<ABLRangeProjectile> ProjectileClass, UPaperFlipbook* ProjectileSprite);
 
 	UFUNCTION()
-	void EndAction(bool bResult);
+	void EndAction();
 
 public:
 	FOnActionFinished OnActionFinished;

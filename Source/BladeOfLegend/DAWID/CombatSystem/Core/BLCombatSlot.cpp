@@ -176,14 +176,7 @@ void ABLCombatSlot::HoverMouse(bool NewHover)
 
 	TargetPointer->SetWidgetClass(HoverWidgetClass);
 
-	if (NewHover)
-	{
-		TargetPointer->SetHiddenInGame(false);
-	}
-	else
-	{
-		TargetPointer->SetHiddenInGame(true);
-	}
+	NewHover ? TargetPointer->SetHiddenInGame(false) : TargetPointer->SetHiddenInGame(true);
 }
 
 void ABLCombatSlot::DestroyCharacter()

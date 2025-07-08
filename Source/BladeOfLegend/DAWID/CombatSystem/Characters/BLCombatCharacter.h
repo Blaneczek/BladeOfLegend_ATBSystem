@@ -96,7 +96,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsMagicImmunity() const { return bMagicImmunity; };
 	UFUNCTION(BlueprintCallable)
-	void SetMagicImmunity(bool NewMaginImumunity) { bMagicImmunity = NewMaginImumunity; }
+	void SetMagicImmunity(bool NewMagicImmunity) { bMagicImmunity = NewMagicImmunity; }
 	
 	UFUNCTION(BlueprintCallable)
 	float GetCurrentAttackDMG() const{ return CurrentAttackDMG; }

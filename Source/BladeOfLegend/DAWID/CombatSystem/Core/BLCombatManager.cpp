@@ -64,7 +64,7 @@ void ABLCombatManager::SetPlayerTeam()
 	{
 		return;
 	}
-
+	
 	for (int32 Index = 0; Index < FMath::Clamp(GI->SaveGameData.HeroesData.Heroes.Num(), 0, 5); ++Index)
 	{
 		const FCombatCharData& CharBaseData = GI->CalculateBaseCombatData(Index);
@@ -196,6 +196,7 @@ void ABLCombatManager::HandleSlotClicked(AActor* Slot)
 			}
 			return;
 		}
+		// Other actions flows
 		default:
 		{
 			if (CurrentSlot->IsEnemy())
@@ -463,18 +464,6 @@ void ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatAction
 			Targets.Add(EnemySlot);
 			break;
 		}
-		case ECombatActionFlow::DEFAULT_MELEE:
-		case ECombatActionFlow::DEFAULT_RANGE:
-		case ECombatActionFlow::MULTIPLE_MELEE:
-		case ECombatActionFlow::MULTIPLE_RANGE:
-		{
-			for (int32 Index = 0; Index < ActionData.TargetsNum; ++Index)
-			{
-				const int32 RandomIndex = FMath::RandRange(0, ActiveSlots.Num() - 1);
-				Targets.Add(PlayerTeam[ActiveSlots[RandomIndex]]);
-			}
-			break;
-		}
 		case ECombatActionFlow::BOUNCE_RANGE:
 		{
 			int32 RandomIndex = FMath::RandRange(0, ActiveSlots.Num() - 1);
@@ -574,7 +563,17 @@ void ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatAction
 			}
 			break;
 		}
-		default: break;
+		// Others action flows
+		default:
+		{
+			for (int32 Index = 0; Index < ActionData.TargetsNum; ++Index)
+			{
+				const int32 RandomIndex = FMath::RandRange(0, ActiveSlots.Num() - 1);
+				Targets.Add(PlayerTeam[ActiveSlots[RandomIndex]]);
+			}
+			break;	
+		}
+		
 	}
 
 	AddActionToQueue(EnemySlot, Targets, ActionData, true);

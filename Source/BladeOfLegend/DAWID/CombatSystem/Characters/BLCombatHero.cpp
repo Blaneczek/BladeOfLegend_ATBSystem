@@ -36,7 +36,7 @@ void ABLCombatHero::HandleTurnsCooldown()
 		}
 	}
 
-	for (const auto* Action : ActionsToDelete)
+	for (const auto& Action : ActionsToDelete)
 	{
 		if (ActionsTurnsCooldown.Contains(Action))
 		{
