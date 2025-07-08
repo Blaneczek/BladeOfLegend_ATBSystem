@@ -324,7 +324,7 @@ void ABLCombatCharacter::HandleDamageHit(ABLCombatCharacter* Attacker, float Dam
 	
 <img src="https://github.com/user-attachments/assets/74257afa-30b0-41d6-abfa-187f43de648c" width="415"> ![slotsgif](https://github.com/user-attachments/assets/74bc39c9-28da-4318-87d1-637c773c6a39)
 
-</br>Combat Manager is the main part of the system that manages gameplay, and also UI elements. We can break it down into 3 parts: Player, Enemies and General.
+</br>Combat Manager is the main part of the system that manages gameplay, and also UI elements. We can break it down into 3 parts (Player, Enemies and General) and describe the most important functions.
 <br>Player: The manager spawns all heroes with the appropriate data and handles clicking on slots when the player performs an action. Then, when the action is used, it processes it further, adding it to the queue.
 
 ```c++
@@ -656,7 +656,49 @@ void ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatAction
 }
 ```
 
-</br>General: The manager
+</br>General: The queue stores all used actions. The manager calls the queue function every 0.5 seconds and checks if no action is currently being executed. If so, it stops all cooldown bars and executes the current action. This allows actions to be queued and executed in a proper time.
+
+```c++
+void ABLCombatManager::HandleActionsQueue()
+{
+	// Do nothing if other action is currently performed. 
+	if (bAction || ActionQueue.IsEmpty())
+	{
+		return;
+	}
+
+	// Delete action from queue if owner is not active (dead).
+	if (!IsValid(ActionQueue[0].OwnerSlot) || !ActionQueue[0].OwnerSlot->IsActive())
+	{
+		ActionQueue.RemoveAt(0);
+		bAction = false;
+		return;
+	}
+		
+	// If it's not summon allies type of action, check if all targets are active (alive). If not, find new active target.
+	if (ActionQueue[0].ActionData.Flow != ECombatActionFlow::SUMMON_ALLIES)
+	{
+		for (int32 Index = ActionQueue[0].TargetsSlots.Num() - 1; Index >= 0; --Index)
+		{
+			if (ActionQueue[0].TargetsSlots[Index] && !ActionQueue[0].TargetsSlots[Index]->IsActive())
+			{
+				if (ABLCombatSlot* NewTargetSlot = FindNewTargetSlot(ActionQueue[0].bEnemyAction))
+				{
+					ActionQueue[0].TargetsSlots[Index] = NewTargetSlot;
+				}
+				else
+				{
+					ActionQueue[0].TargetsSlots.RemoveSingle(ActionQueue[0].TargetsSlots[Index]);
+				}
+			}
+		}
+	}
+
+	DoAction(ActionQueue[0].OwnerSlot, ActionQueue[0].TargetsSlots, ActionQueue[0].ActionData, ActionQueue[0].bEnemyAction);
+	ActionQueue.RemoveAt(0);
+}
+```
+
 </details>
 
 # UI ([code](Source/BladeOfLegend/DAWID/UI))
