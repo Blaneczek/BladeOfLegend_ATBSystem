@@ -28,9 +28,9 @@ Together with the team, we have created a playable demo where you can test the s
 </br>	
 Actions are used for all activities that characters perform during combat, from using abilities to using items. Each action is a UObject that is created when any activity is performed. There are 9 types of actions that determine how an activity will be performed: </br>
   
-![image](https://github.com/user-attachments/assets/b5b246d9-91e8-4e83-b154-97bad793ce8a)
+<img src="https://github.com/user-attachments/assets/b5b246d9-91e8-4e83-b154-97bad793ce8a" width="800">
 
-**Default:** an action that is used on the character who performs it, such as using items or the Defense ability.
+</br>**Default:** an action that is used on the character who performs it, such as using items or the Defense ability.
 </br>![default](https://github.com/user-attachments/assets/484e87a2-7d96-4baa-95b8-bdd5fe2d6283)
 
 </br>**Default Melee/Range:** an action that is used on another character, such as using the default attack ability. In Melee the character runs to the target, in Range the character sends a projectile to the target.
@@ -51,9 +51,9 @@ Actions are used for all activities that characters perform during combat, from 
 </br>**Summon:** a special action that allows you to summon new characters to slots.
 </br>![summon](https://github.com/user-attachments/assets/096a0d5e-dcf4-4a06-b8e0-a25141f1518f)
 
-</br>Let's take a look at how this works. For example, the player selects Attack, selects the enemy character, and then the proper UObject is created. An action of type DefaultMelee is used for this purpose. The character's default attack is created in Blueprint, which inherits from the DefaultMeleeAction class. This way designers can easily create abilities in Blueprints, set all the necessary data and calculate damage or other effects. 
-  
-![image](https://github.com/user-attachments/assets/5f530f65-0e81-433f-a5ac-ebcfae6f0f37)
+</br>Let's take a look at how this works. For example, the player selects Attack, selects the enemy character, and then the proper UObject is created. An action of type DefaultMelee is used for this purpose. The character's default attack is created in Blueprint, which inherits from the DefaultMeleeAction class. This way designers can easily create abilities in Blueprints, set all the necessary data and calculate damage or other effects. </br> 
+
+<img src="https://github.com/user-attachments/assets/5f530f65-0e81-433f-a5ac-ebcfae6f0f37" width="1000">
 
 </br>Actions are managed by BLActionComponent, which is added to Characters. In this component, the correct action type is first created in the CreateAction function based on ActionData.Type. Then the OnCreateAction function of the newly created UObject is called.
 
@@ -318,8 +318,345 @@ void ABLCombatCharacter::HandleDamageHit(ABLCombatCharacter* Attacker, float Dam
 # Core ([code](Source/BladeOfLegend/DAWID/Core)) 
 <details>
 <summary>More</summary>
-</br>There are two key elements: CombatSlots and CombatManager. 
+</br>There are two key elements: Combat Slots and Combat Manager. 
+</br>
+</br>Combat slots are actors with collision boxes placed on the level where combat characters are located. Each character is assigned to a slot. The player can interact with the assigned slots using the mouse. When the player hovers over or clicks on a slot, an arrow of a different color appears. Slots are used to select heroes and enemies by the player.
 	
+<img src="https://github.com/user-attachments/assets/74257afa-30b0-41d6-abfa-187f43de648c" width="415"> ![slotsgif](https://github.com/user-attachments/assets/74bc39c9-28da-4318-87d1-637c773c6a39)
+
+</br>Combat Manager is the main part of the system that manages gameplay, and also UI elements. We can break it down into 3 parts: Player, Enemies and General.
+<br>Player: The manager spawns all heroes with the appropriate data and handles clicking on slots when the player performs an action. Then, when the action is used, it processes it further, adding it to the queue.
+
+```c++
+void ABLCombatManager::SetPlayerTeam()
+{
+	UBLGameInstance* GI = Cast<UBLGameInstance>(GetGameInstance());	
+	if (!GI || !IsValid(Widget))
+	{
+		return;
+	}
+
+	for (int32 Index = 0; Index < FMath::Clamp(GI->SaveGameData.HeroesData.Heroes.Num(), 0, 5); ++Index)
+	{
+		const FCombatCharData& CharBaseData = GI->CalculateBaseCombatData(Index);
+		if (PlayerTeam[Index])
+		{
+			PlayerTeam[Index]->SpawnHero(CharBaseData, GI->SaveGameData.HeroesData.Heroes[Index].CombatActions, GI->CombatData.bSneakAttack);
+			GI->CombatData.bSneakAttack ? Widget->AddHero(PlayerTeam[Index]->GetIndex(), CharBaseData, true)
+										: Widget->AddHero(PlayerTeam[Index]->GetIndex(), CharBaseData, false);
+			Widget->AddHeroActions(PlayerTeam[Index]->GetIndex(), CharBaseData, GI->SaveGameData.HeroesData.Heroes[Index].CombatActions, GI->CombatData.bCanRunAway);
+		}
+	}
+}
+```
+
+```c++
+void ABLCombatManager::HandleSlotClicked(AActor* Slot)
+{
+	if (CurrentActionType == ECombatActionType::NONE)
+	{
+		return;
+	}
+	
+	ABLCombatSlot* CurrentSlot = Cast<ABLCombatSlot>(Slot);
+	if (!CurrentSlot || !CurrentSlot->IsActive())
+	{
+		return;
+	}
+
+	// If the player doesn't have enough ME for an action, display the widget.
+	if (IsValid(Widget) && CurrentActionData.MECost > CurrentPlayerSlot->GetCharacter()->GetCurrentME())
+	{
+		Widget->ActivateNotEnoughME();
+		return;
+	}
+
+	switch (CurrentActionData.Flow) 
+	{
+		case ECombatActionFlow::DEFAULT:
+		{
+			if (CurrentSlot == CurrentPlayerSlot)
+			{
+				ChooseTargetSlot(CurrentSlot);
+				break;
+			}
+			return;
+		}
+		case ECombatActionFlow::COLUMN_MELEE:
+		{
+			if (CurrentSlot->IsEnemy())
+			{
+				int32 IndexStart = 0;
+				int32 IndexEnd = 0;
+				// 1. column
+				if (CurrentSlot->GetIndex() <= 3)
+				{
+					IndexStart = 0;
+					IndexEnd = 3;
+				}
+				// 2. column
+				else if (CurrentSlot->GetIndex() >= 4 && CurrentSlot->GetIndex() <= 7)
+				{
+					IndexStart = 4;
+					IndexEnd = 7;
+				}
+				// 3. column
+				else
+				{
+					IndexStart = 8;
+					IndexEnd = 11;
+				}
+
+				for (IndexStart; IndexStart <= IndexEnd; ++IndexStart)
+				{
+					if (EnemyTeam[IndexStart] && EnemyTeam[IndexStart]->IsActive())
+					{
+						ChooseTargetSlot(EnemyTeam[IndexStart]);
+					}
+				}
+				break;
+			}
+			return;				
+		}
+		case ECombatActionFlow::BOUNCE_RANGE:
+		{
+			if (CurrentSlot->IsEnemy())
+			{
+				ChooseTargetSlot(CurrentSlot);
+				if (CurrentActionData.TargetsNum == 1)
+				{
+					break;
+				}
+
+				// Projectiles cannot bounce 2 times in a row on the same target
+				int32 DisabledIndex = CurrentSlot->GetIndex();
+				for (int32 Index = 0; Index < CurrentActionData.TargetsNum - 1; ++Index)
+				{
+					TArray<int32> AvailableIndexes;
+					for (const auto& EnemySlot : EnemyTeam)
+					{
+						if (EnemySlot && EnemySlot->IsActive() && EnemySlot->GetIndex() != DisabledIndex)
+						{
+							AvailableIndexes.Add(EnemySlot->GetIndex());
+						}
+					}
+
+					if (AvailableIndexes.IsEmpty())
+					{
+						break; 
+					}
+
+					const int32 RandomIndex = FMath::RandRange(0, AvailableIndexes.Num() - 1);						
+					CurrentTargetsSlots.Add(EnemyTeam[AvailableIndexes[RandomIndex]]);
+					DisabledIndex = AvailableIndexes[RandomIndex];
+				}
+				break;
+			}
+			return;
+		}
+		case ECombatActionFlow::WHOLE_TEAM_IN_PLACE:
+		{
+			if (CurrentSlot->IsEnemy())
+			{	
+				for (const auto& EnemySlot : EnemyTeam)
+				{
+					if (EnemySlot && EnemySlot->IsActive())
+					{
+						ChooseTargetSlot(EnemySlot);
+					}
+				}
+				break;
+			}
+			return;
+		}
+		// Other action flows	
+		default:
+		{
+			if (CurrentSlot->IsEnemy())
+			{
+				ChooseTargetSlot(CurrentSlot);
+				if (CurrentTargetsSlots.Num() >= CurrentActionData.TargetsNum)
+				{
+					break;
+				}
+			}
+			return;
+		}
+	}
+
+	ProcessPlayerAction();
+}
+```
+
+```c++
+void ABLCombatManager::ProcessPlayerAction()
+{
+	if (!IsValid(Widget) || !IsValid(CurrentPlayerSlot))
+	{
+		return;
+	}
+
+	AddActionToQueue(CurrentPlayerSlot, CurrentTargetsSlots, CurrentActionData, false);
+	CurrentPlayerSlot->bCanDoAction = false;
+	CurrentActionType = ECombatActionType::NONE;
+
+	Widget->ResetHeroCooldownBar(CurrentPlayerSlot->GetIndex());
+
+	ClearPlayerSlot();
+	ChooseAvailablePlayerSlot();
+
+	FTimerHandle ClearTargetDelay;
+	FTimerDelegate ClearTargetDel;
+	ClearTargetDel.BindUObject(this, &ABLCombatManager::ClearTargetsSlots);
+	GetWorld()->GetTimerManager().SetTimer(ClearTargetDelay, ClearTargetDel, 1.f, false);
+}
+```
+
+</br>Enemies: The manager spawns all enemies with the appropriate data and handles their actions.
+
+```c++
+void ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatActionData&& ActionData)
+{
+	TArray<int32> ActiveSlots;
+	for (const auto& Slot : PlayerTeam)
+	{
+		if (Slot && Slot->IsActive())
+		{
+			ActiveSlots.Add(Slot->GetIndex());
+		}
+	}
+
+	if (ActiveSlots.IsEmpty())
+	{
+		return;
+	}
+
+	TArray<ABLCombatSlot*> Targets;
+
+	switch (ActionData.Flow)
+	{
+		case ECombatActionFlow::DEFAULT:
+		{
+			Targets.Add(EnemySlot);
+			break;
+		}
+		case ECombatActionFlow::BOUNCE_RANGE:
+		{
+			int32 RandomIndex = FMath::RandRange(0, ActiveSlots.Num() - 1);
+			Targets.Add(PlayerTeam[ActiveSlots[RandomIndex]]);
+			int32 DisabledIndex = ActiveSlots[RandomIndex];
+
+			for (int32 Index = 0; Index < ActionData.TargetsNum - 1; ++Index)
+			{
+				TArray<int32> AvailableIndexes;
+				for (const auto& ActiveIndex : ActiveSlots)
+				{
+					if (ActiveIndex != DisabledIndex)
+					{
+						AvailableIndexes.Add(ActiveIndex);
+					}
+				}
+				if (AvailableIndexes.IsEmpty())
+				{
+					break;
+				}
+				RandomIndex = FMath::RandRange(0, AvailableIndexes.Num() - 1);
+				Targets.Add(PlayerTeam[AvailableIndexes[RandomIndex]]);
+				DisabledIndex = AvailableIndexes[RandomIndex];
+			}
+			break;
+		}
+		case ECombatActionFlow::SUMMON_ALLIES:
+		{
+			TArray<int32> AvailableSlotsIndex;
+			for (const auto& Slot : EnemyTeam)
+			{
+				// not active because we are summoning in free slots
+				if (Slot && !Slot->IsActive() && Slot != EnemySlot)
+				{
+					AvailableSlotsIndex.Add(Slot->GetIndex());
+				}
+			}
+
+			if (AvailableSlotsIndex.IsEmpty())
+			{
+				Targets.Add(FindNewTargetSlot(true));
+				ActionData = FCombatActionData(ECombatActionType::ATTACK, ECombatActionFlow::DEFAULT_MELEE, 0);
+				break;
+			}
+
+			for (int32 Index = 0; Index < ActionData.TargetsNum; ++Index)
+			{
+				if (AvailableSlotsIndex.IsEmpty())
+				{
+					break;
+				}
+				const int32 RandomIndex = FMath::RandRange(0, AvailableSlotsIndex.Num() - 1);
+				Targets.Add(EnemyTeam[AvailableSlotsIndex[RandomIndex]]);
+				AvailableSlotsIndex.RemoveAt(RandomIndex);
+			}
+			break;
+		}
+		case ECombatActionFlow::KILL_ALLIES:
+		{
+			TArray<int32> AvailableSlotsIndex;
+			for (auto& Slot : EnemyTeam)
+			{
+				if (Slot && Slot->IsActive() && Slot != EnemySlot)
+				{
+					AvailableSlotsIndex.Add(Slot->GetIndex());
+				}
+			}
+
+			if (AvailableSlotsIndex.IsEmpty())
+			{
+				Targets.Add(FindNewTargetSlot(true));
+				ActionData = FCombatActionData(ECombatActionType::ATTACK, ECombatActionFlow::DEFAULT_MELEE, 0);
+				break;
+			}
+
+			const int32 Random = FMath::RandRange(1, ActionData.TargetsNum);
+			for (int32 Index = 0; Index < Random; ++Index)
+			{
+				if (AvailableSlotsIndex.IsEmpty())
+				{
+					break;
+				}
+				const int32 RandomIndex = FMath::RandRange(0, AvailableSlotsIndex.Num() - 1);
+				Targets.Add(EnemyTeam[AvailableSlotsIndex[RandomIndex]]);
+				AvailableSlotsIndex.RemoveAt(RandomIndex);
+			}
+			break;
+		}
+		case ECombatActionFlow::WHOLE_TEAM_IN_PLACE:
+		{
+			for (const auto& Slot : PlayerTeam)
+			{
+				if (Slot && Slot->IsActive())
+				{
+					Targets.Add(Slot);
+				}
+			}
+			break;
+		}
+		// Others action flows
+		default:
+		{
+			for (int32 Index = 0; Index < ActionData.TargetsNum; ++Index)
+			{
+				const int32 RandomIndex = FMath::RandRange(0, ActiveSlots.Num() - 1);
+				Targets.Add(PlayerTeam[ActiveSlots[RandomIndex]]);
+			}
+			break;	
+		}
+		
+	}
+
+	AddActionToQueue(EnemySlot, Targets, ActionData, true);
+}
+```
+
+</br>General: The manager
 </details>
 
 # UI ([code](Source/BladeOfLegend/DAWID/UI))
