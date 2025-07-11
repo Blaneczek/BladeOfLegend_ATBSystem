@@ -4,7 +4,10 @@ Active Time Battle is a type of turn-based combat system in which each character
 ![atb_system](https://github.com/user-attachments/assets/dd45f40c-6826-458c-b025-c6fe10f13a89)
 
 # Introduction
-The system was created while participating in a game jam. The team and I were developing a classic 2D RPG with turn-based combat. The game was made using Unreal Engine 5 and C++. My task was to create the combat system and implement the designers' ideas, as well as integrate the system with the game's UI. The system consists of 6 types of activities: attack, defense, crystal skills, weapon skills, items, escape. Each of them uses actions which are templates for skills which can be easily created in 9 different prepared types. The video demonstrates a sample gameplay showing most of the elements of the system: (https://www.youtube.com/watch?v=getVlf-3iAM or click the image below)
+The system was created while participating in a game jam. The team and I were developing a classic 2D RPG with turn-based combat. The game was made using Unreal Engine 5 and C++. 
+</br>My task was to create the combat system and implement the designers' ideas, as well as integrate the system with the game's UI. 
+</br>The system consists of 6 types of activities: attack, defense, crystal skills, weapon skills, items, escape. Each of them uses actions which are templates for skills which can be easily created in 9 different prepared types. 
+</br>The video demonstrates a sample gameplay showing most of the elements of the system: (https://www.youtube.com/watch?v=getVlf-3iAM or click the image below)
 
 [![GAMEPLAY](https://img.youtube.com/vi/getVlf-3iAM/0.jpg)](https://www.youtube.com/watch?v=getVlf-3iAM)
 
@@ -51,11 +54,11 @@ Actions are used for all activities that characters perform during combat, from 
 </br>**Summon:** a special action that allows you to summon new characters to slots.
 </br>![summon](https://github.com/user-attachments/assets/096a0d5e-dcf4-4a06-b8e0-a25141f1518f)
 
-</br>Let's take a look at how this works. For example, the player selects Attack, selects the enemy character, and then the proper UObject is created. An action of type DefaultMelee is used for this purpose. The character's default attack is created in Blueprint, which inherits from the DefaultMeleeAction class. This way designers can easily create abilities in Blueprints, set all the necessary data and calculate damage or other effects. </br> 
+</br>Let's take a look at how this works. For example, the player selects **Attack**, selects the enemy character, and then the proper UObject is created. An action of type **DefaultMelee** is used for this purpose. The character's default attack is created in Blueprint, which inherits from the **DefaultMeleeAction** class. This way designers can easily create abilities in Blueprints, set all the necessary data and calculate damage or other effects. </br> 
 
 <img src="https://github.com/user-attachments/assets/5f530f65-0e81-433f-a5ac-ebcfae6f0f37" width="1000">
 
-</br>Actions are managed by BLActionComponent, which is added to Characters. In this component, the correct action type is first created in the CreateAction function based on ActionData.Type. Then the OnCreateAction function of the newly created UObject is called.
+</br>Actions are managed by **BLActionComponent**, which is added to Characters. In this component, the correct action type is first created in the **CreateAction** function based on **ActionData.Type**. Then the **OnCreateAction** function of the newly created UObject is called.
 
 ```c++
 void UBLActionComponent::CreateAction(const FVector& OwnerSlotLocation, const TArray<ABLCombatSlot*>& Targets, const FCombatActionData& ActionData, AActor* CombatManagerActor)
@@ -95,7 +98,7 @@ void UBLActionComponent::CreateAction(const FVector& OwnerSlotLocation, const TA
   .
 ```
 
-</br>The ActivateAction function is then called in the Action object. Each action type has its own implementation of this function. The action we chose earlier is of type DefaultMeleeAction. There we return to the ActionComponent and call the DefaultMeleeAction function. 
+</br>The **ActivateAction** function is then called in the Action object. Each action type has its own implementation of this function. The action we chose earlier is of type **DefaultMeleeAction**. There we return to the ActionComponent and call the **DefaultMeleeAction** function. 
 
 ```c++
 void UBLAction::OnCreateAction(UBLActionComponent* OwnerComponent, ABLCombatCharacter* Owner, AActor* InCombatManager)
@@ -127,7 +130,7 @@ void UBLDefaultMeleeAction::ActivateAction(UBLActionComponent* OwnerComponent)
 }
 ```
 
-</br>ActionComponent manages all the action flows. In our example, the DefaultMeleeAction function is called, which calculates the location where our character needs to move and sends it there.
+</br>**ActionComponent** manages all the action flows. In our example, the **DefaultMeleeAction** function is called, which calculates the location where our character needs to move and sends it there.
 
 ```c++
 /** Action is executing in place, target is the owner. */
@@ -220,7 +223,8 @@ void UBLDefaultMeleeAction::ExecuteAction(const TArray<ABLCombatSlot*>& Targets)
 # Combat characters ([code](Source/BladeOfLegend/DAWID/Characters)) 
 <details>
 <summary>More</summary>
-</br>Combat characters are heroes and enemies used during combat. They contain all the necessary data, such as character attributes and possessed actions, as well as functions responsible for calculating damage and other effects.
+	
+</br>**Combat characters** are heroes and enemies used during combat. They contain all the necessary data, such as character attributes and possessed actions, as well as functions responsible for calculating damage and other effects.
 
 ```c++
 float ABLCombatCharacter::CalculateElementsMultipliers(ECombatElementType DamageElementType, ECombatElementType CharacterElementType, bool& OutIsHeal)
@@ -318,14 +322,15 @@ void ABLCombatCharacter::HandleDamageHit(ABLCombatCharacter* Attacker, float Dam
 # Core ([code](Source/BladeOfLegend/DAWID/Core)) 
 <details>
 <summary>More</summary>
-</br>There are two key elements: Combat Slots and Combat Manager. 
+	
+</br>There are two key elements: **Combat Slots** and **Combat Manager**. 
 </br>
-</br>Combat slots are actors with collision boxes placed on the level where combat characters are located. Each character is assigned to a slot. The player can interact with the assigned slots using the mouse. When the player hovers over or clicks on a slot, an arrow of a different color appears. Slots are used to select heroes and enemies by the player.
+</br>**Combat slots** are actors with collision boxes placed on the level where combat characters are located. Each character is assigned to a slot. The player can interact with the assigned slots using the mouse. When the player hovers over or clicks on a slot, an arrow of a different color appears. Slots are used to select heroes and enemies by the player.
 	
 <img src="https://github.com/user-attachments/assets/74257afa-30b0-41d6-abfa-187f43de648c" width="415"> ![slotsgif](https://github.com/user-attachments/assets/74bc39c9-28da-4318-87d1-637c773c6a39)
 
-</br>Combat Manager is the main part of the system that manages gameplay, and also UI elements. We can break it down into 3 parts (Player, Enemies and General) and describe the most important functions.
-<br>Player: The manager spawns all heroes with the appropriate data and handles clicking on slots when the player performs an action. Then, when the action is used, it processes it further, adding it to the queue.
+</br>**Combat Manager** is the main part of the system that manages gameplay, and also UI elements. We can break it down into 3 parts (Player, Enemies and General) and describe the most important functions.
+</br></br>**Player:** The manager spawns all heroes with the appropriate data and handles clicking on slots when the player performs an action. Then, when the action is used, it processes it further, adding it to the queue.
 
 ```c++
 void ABLCombatManager::SetPlayerTeam()
@@ -512,7 +517,7 @@ void ABLCombatManager::ProcessPlayerAction()
 }
 ```
 
-</br>Enemies: The manager spawns all enemies with the appropriate data and handles their actions.
+</br>**Enemies:** The manager spawns all enemies with the appropriate data and handles their actions.
 
 ```c++
 void ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatActionData&& ActionData)
@@ -656,7 +661,7 @@ void ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatAction
 }
 ```
 
-</br>General: The queue stores all used actions. The manager calls the queue function every 0.5 seconds and checks if no action is currently being executed. If so, it stops all cooldown bars and executes the current action. This allows actions to be queued and executed in a proper time.
+</br>**General:** The queue stores all used actions. The manager calls the queue function every 0.5 seconds and checks if no action is currently being executed. If so, it stops all cooldown bars and executes the current action. This allows actions to be queued and executed in a proper time.
 
 ```c++
 void ABLCombatManager::HandleActionsQueue()
@@ -704,5 +709,72 @@ void ABLCombatManager::HandleActionsQueue()
 # UI ([code](Source/BladeOfLegend/DAWID/UI))
 <details>
 <summary>More</summary>
+	
+</br>The player controls the gameplay by interacting with the UI using the mouse. Therefore, it is very important that the UI elements work properly. While the visual elements are done in blueprints, all logic is done entirely in cpp to maintain performance and proper integration with the system.
+</br></br>The main panel contains 3 elements: **Enemies Panel** (displays information about enemies, not interactive), **Heroes Panel** (displays information about heroes, by clicking on them we can switch the currently active Hero), **Actions Panel** (contains information about all actions, we can choose there which one we want to use).
+
+![UIgif](https://github.com/user-attachments/assets/3b1be6e0-4624-469b-b475-c354622e42cd)
+
+</br>For example, the logic responsible for selecting the currently active hero starts in **BLHeroesWidget**. We add a function delegate to the **On click event**, which highlights the tile and calls another delegate that is binded in the **BLComabtWidget**. Then, in the same way, we go to the **Combat manager** were CombatWidget delegates are binded, and select the corresponding player slot.
+
+```c++
+void UBLHeroesWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	HeroesTileView->OnItemClicked().AddUObject(this, &UBLHeroesWidget::HeroClicked);
+}
+
+void UBLHeroesWidget::HeroClicked(UObject* Item)
+{
+	UBLHeroEntryWidget* Hero = Cast<UBLHeroEntryWidget>(HeroesTileView->GetEntryWidgetFromItem(Item));
+	if (Hero && Hero->CanDoAction())
+	{
+		UnlightsHero();
+		ClickedHero = Hero;
+		ClickedHero->HighlightHero();
+		OnHeroClicked.ExecuteIfBound(Hero->GetIndex());
+	}
+}
+```
+
+```c++
+void UBLCombatWidget::AddHero(int32 SlotIndex, const FCombatCharData& BaseData, bool bSneakAttack)
+{
+	Heroes->AddHero(SlotIndex, BaseData.Name, BaseData.MaxHP, BaseData.CurrentHP, BaseData.MaxME);
+	Heroes->OnHeroClicked.BindUObject(this, &UBLCombatWidget::HeroClicked);
+
+	.
+	.
+	.
+}
+
+void UBLCombatWidget::HeroClicked(int32 HeroIndex)
+{
+	OnHeroSelected.ExecuteIfBound(HeroIndex);
+}
+```
+
+```c++
+void ABLCombatManager::InitializeWidget()
+{
+	if (WidgetClass)
+	{
+		Widget = CreateWidget<UBLCombatWidget>(GetWorld(), WidgetClass);
+		Widget->OnActionChosen.BindUObject(this, &ABLCombatManager::SetPlayerActionData);
+		Widget->OnHeroSelected.BindUObject(this, &ABLCombatManager::ChoosePlayerSlot);
+		Widget->OnResetCurrentActionType.BindWeakLambda(this, [this]() {CurrentActionType = ECombatActionType::NONE; });
+	}
+}
+
+void ABLCombatManager::ChoosePlayerSlot(int32 Index)
+{
+	if (PlayerTeam.IsValidIndex(Index))
+	{
+		ClearPlayerSlot();
+		ChoosePlayerSlot(PlayerTeam[Index]);
+	}
+}
+```
 
 </details>
