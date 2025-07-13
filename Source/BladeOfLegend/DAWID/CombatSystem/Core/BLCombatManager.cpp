@@ -7,7 +7,6 @@
 #include "BLCombatSlot.h"
 #include "Characters/BLCombatCharacter.h"
 #include "Data/BLEnemyDataAsset.h"
-#include "UObject/SoftObjectPtr.h"
 #include "UI/BLCombatWidget.h"
 #include "UI/BLActionsWidget.h"
 #include "BladeOfLegend/AREK/GameInstance/BLGameInstance.h"
