@@ -390,6 +390,21 @@ void ABLCombatManager::HandleSlotClicked(AActor* Slot)
 			}
 			return;
 		}
+		case ECombatActionFlow::DEFAULT_MELEE:
+		case ECombatActionFlow::DEFAULT_RANGE:
+		case ECombatActionFlow::MULTIPLE_MELEE:
+		case ECombatActionFlow::MULTIPLE_RANGE:
+		{
+			if (CurrentSlot->IsEnemy())
+			{
+				ChooseTargetSlot(CurrentSlot);
+				if (CurrentTargetsSlots.Num() >= CurrentActionData.TargetsNum)
+				{
+					break;
+				}
+			}
+			return;	
+		}
 		case ECombatActionFlow::COLUMN_MELEE:
 		{
 			if (CurrentSlot->IsEnemy())
@@ -477,17 +492,8 @@ void ABLCombatManager::HandleSlotClicked(AActor* Slot)
 			}
 			return;
 		}
-		// Other action flows	
 		default:
 		{
-			if (CurrentSlot->IsEnemy())
-			{
-				ChooseTargetSlot(CurrentSlot);
-				if (CurrentTargetsSlots.Num() >= CurrentActionData.TargetsNum)
-				{
-					break;
-				}
-			}
 			return;
 		}
 	}
@@ -523,7 +529,7 @@ void ABLCombatManager::ProcessPlayerAction()
 </br>**Enemies:** The manager spawns all enemies with the appropriate data and handles their actions.
 
 ```c++
-void ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatActionData&& ActionData)
+oid ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatActionData&& ActionData)
 {
 	TArray<int32> ActiveSlots;
 	for (const auto& Slot : PlayerTeam)
@@ -547,6 +553,18 @@ void ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatAction
 		{
 			Targets.Add(EnemySlot);
 			break;
+		}
+		case ECombatActionFlow::DEFAULT_MELEE:
+		case ECombatActionFlow::DEFAULT_RANGE:
+		case ECombatActionFlow::MULTIPLE_MELEE:
+		case ECombatActionFlow::MULTIPLE_RANGE:
+		{
+			for (int32 Index = 0; Index < ActionData.TargetsNum; ++Index)
+			{
+				const int32 RandomIndex = FMath::RandRange(0, ActiveSlots.Num() - 1);
+				Targets.Add(PlayerTeam[ActiveSlots[RandomIndex]]);
+			}
+			break;		
 		}
 		case ECombatActionFlow::BOUNCE_RANGE:
 		{
@@ -647,15 +665,9 @@ void ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatAction
 			}
 			break;
 		}
-		// Others action flows
 		default:
 		{
-			for (int32 Index = 0; Index < ActionData.TargetsNum; ++Index)
-			{
-				const int32 RandomIndex = FMath::RandRange(0, ActiveSlots.Num() - 1);
-				Targets.Add(PlayerTeam[ActiveSlots[RandomIndex]]);
-			}
-			break;	
+			return;
 		}
 		
 	}
