@@ -721,7 +721,7 @@ void ABLCombatManager::HandleActionsQueue()
 
 </details>
 
-# UI ([code](Source/BladeOfLegend/CombatSystem/DAWID/UI))
+# UI ([code](Source/BladeOfLegend/DAWID/CombatSystem/UI))
 <details>
 <summary>More</summary>
 	
