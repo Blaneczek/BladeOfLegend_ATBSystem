@@ -28,7 +28,7 @@ Together with the team, we have created a playable demo where you can test the s
 | [UI](#ui-code)                                                                | Integrated widgets with the system.                             |
 
 
-# Actions ([code](Source/BladeOfLegend/DAWID/Actions))  
+# Actions ([code](Source/BladeOfLegend/DAWID/CombatSystem/Actions))  
 <details>
 <summary>More</summary>
 </br>	
@@ -223,7 +223,7 @@ void UBLDefaultMeleeAction::ExecuteAction(const TArray<ABLCombatSlot*>& Targets)
 <br>
 </details>
 
-# Combat characters ([code](Source/BladeOfLegend/DAWID/Characters)) 
+# Combat characters ([code](Source/BladeOfLegend/DAWID/CombatSystem/Characters)) 
 <details>
 <summary>More</summary>
 	
@@ -322,7 +322,7 @@ void ABLCombatCharacter::HandleDamageHit(ABLCombatCharacter* Attacker, float Dam
 
 </details>
 
-# Core ([code](Source/BladeOfLegend/DAWID/Core)) 
+# Core ([code](Source/BladeOfLegend/DAWID/CombatSystem/Core)) 
 <details>
 <summary>More</summary>
 	
@@ -721,7 +721,7 @@ void ABLCombatManager::HandleActionsQueue()
 
 </details>
 
-# UI ([code](Source/BladeOfLegend/DAWID/UI))
+# UI ([code](Source/BladeOfLegend/CombatSystem/DAWID/UI))
 <details>
 <summary>More</summary>
 	
