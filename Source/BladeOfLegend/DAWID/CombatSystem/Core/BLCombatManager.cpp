@@ -108,6 +108,21 @@ void ABLCombatManager::HandleSlotClicked(AActor* Slot)
 			}
 			return;
 		}
+		case ECombatActionFlow::DEFAULT_MELEE:
+		case ECombatActionFlow::DEFAULT_RANGE:
+		case ECombatActionFlow::MULTIPLE_MELEE:
+		case ECombatActionFlow::MULTIPLE_RANGE:
+		{
+			if (CurrentSlot->IsEnemy())
+			{
+				ChooseTargetSlot(CurrentSlot);
+				if (CurrentTargetsSlots.Num() >= CurrentActionData.TargetsNum)
+				{
+					break;
+				}
+			}
+			return;	
+		}
 		case ECombatActionFlow::COLUMN_MELEE:
 		{
 			if (CurrentSlot->IsEnemy())
@@ -195,17 +210,8 @@ void ABLCombatManager::HandleSlotClicked(AActor* Slot)
 			}
 			return;
 		}
-		// Other actions flows
 		default:
 		{
-			if (CurrentSlot->IsEnemy())
-			{
-				ChooseTargetSlot(CurrentSlot);
-				if (CurrentTargetsSlots.Num() >= CurrentActionData.TargetsNum)
-				{
-					break;
-				}
-			}
 			return;
 		}
 	}
@@ -463,6 +469,18 @@ void ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatAction
 			Targets.Add(EnemySlot);
 			break;
 		}
+		case ECombatActionFlow::DEFAULT_MELEE:
+		case ECombatActionFlow::DEFAULT_RANGE:
+		case ECombatActionFlow::MULTIPLE_MELEE:
+		case ECombatActionFlow::MULTIPLE_RANGE:
+		{
+			for (int32 Index = 0; Index < ActionData.TargetsNum; ++Index)
+			{
+				const int32 RandomIndex = FMath::RandRange(0, ActiveSlots.Num() - 1);
+				Targets.Add(PlayerTeam[ActiveSlots[RandomIndex]]);
+			}
+			break;		
+		}
 		case ECombatActionFlow::BOUNCE_RANGE:
 		{
 			int32 RandomIndex = FMath::RandRange(0, ActiveSlots.Num() - 1);
@@ -562,15 +580,9 @@ void ABLCombatManager::HandleEnemyAction(ABLCombatSlot* EnemySlot, FCombatAction
 			}
 			break;
 		}
-		// Others action flows
 		default:
 		{
-			for (int32 Index = 0; Index < ActionData.TargetsNum; ++Index)
-			{
-				const int32 RandomIndex = FMath::RandRange(0, ActiveSlots.Num() - 1);
-				Targets.Add(PlayerTeam[ActiveSlots[RandomIndex]]);
-			}
-			break;	
+			return;
 		}
 		
 	}
